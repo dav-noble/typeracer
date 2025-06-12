@@ -26,6 +26,15 @@ function getRandomText(difficulty) {
 // DOM elements
 const difficultySelect = document.getElementById("difficulty");
 const sampleTextDiv = document.getElementById("sample-text");
+const startBtn = document.getElementById("start-btn");
+const stopBtn = document.getElementById("stop-btn");
+const timeSpan = document.getElementById("time");
+const userInput = document.getElementById("user-input");
+
+// Timer variables
+let startTime = null;
+let endTime = null;
+let timerRunning = false;
 
 // Function to update the sample text
 function updateSampleText() {
@@ -33,8 +42,68 @@ function updateSampleText() {
     sampleTextDiv.textContent = getRandomText(selectedDifficulty);
 }
 
+function startTest() {
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    startTime = performance.now();
+    endTime = null;
+    timerRunning = true;
+    timeSpan.textContent = "0.00";
+    userInput.value = ""; // Clear the textarea
+    userInput.disabled = false; // Enable textarea
+    userInput.focus(); // Optional: focus for convenience
+}
+
+function stopTest() {
+    if (!timerRunning) return;
+    endTime = performance.now();
+    timerRunning = false;
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
+    timeSpan.textContent = elapsedSeconds;
+    userInput.disabled = true; // Disable textarea
+
+    // Calculate WPM
+    const sampleText = sampleTextDiv.textContent.trim();
+    const userText = userInput.value.trim();
+
+    const sampleWords = sampleText.split(/\s+/);
+    const userWords = userText.split(/\s+/);
+
+    let correctWords = 0;
+    for (let i = 0; i < Math.min(sampleWords.length, userWords.length); i++) {
+        if (sampleWords[i] === userWords[i]) {
+            correctWords++;
+        }
+    }
+
+    const minutes = (endTime - startTime) / 1000 / 60;
+    const wpm = minutes > 0 ? Math.round(correctWords / minutes) : 0;
+
+    // Display WPM and difficulty level
+    document.getElementById("wpm").textContent = wpm;
+    document.getElementById("level").textContent =
+        difficultySelect.options[difficultySelect.selectedIndex].text;
+}
+
+function initializeButtons() {
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    userInput.disabled = true; // Disable textarea on load
+}
+
 // Event listener for difficulty change
 difficultySelect.addEventListener("change", updateSampleText);
 
 // Optionally, set a random text on page load
 document.addEventListener("DOMContentLoaded", updateSampleText);
+
+// Event listeners for start and stop buttons
+startBtn.addEventListener("click", startTest);
+stopBtn.addEventListener("click", stopTest);
+
+document.addEventListener("DOMContentLoaded", function () {
+    updateSampleText();
+    initializeButtons();
+});
