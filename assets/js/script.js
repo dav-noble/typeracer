@@ -42,6 +42,30 @@ function updateSampleText() {
     sampleTextDiv.textContent = getRandomText(selectedDifficulty);
 }
 
+// Function to update sample text with real-time feedback
+function updateSampleTextHighlight() {
+    const sampleText = sampleTextDiv.textContent.trim();
+    const userText = userInput.value.trim();
+
+    const sampleWords = sampleText.split(/\s+/);
+    const userWords = userText.split(/\s+/);
+
+    let highlighted = sampleWords.map((word, idx) => {
+        if (userWords[idx] === undefined) {
+            return `<span>${word}</span>`;
+        } else if (userWords[idx] === word) {
+            return `<span style="color: #007bff; font-weight: bold;">${word}</span>`; // blue for correct
+        } else {
+            return `<span style="color: #dc3545; font-weight: bold;">${word}</span>`; // red for incorrect
+        }
+    });
+
+    sampleTextDiv.innerHTML = highlighted.join(" ");
+}
+
+// Listen for input changes to provide real-time feedback
+userInput.addEventListener("input", updateSampleTextHighlight);
+
 function startTest() {
     startBtn.disabled = true;
     stopBtn.disabled = false;
